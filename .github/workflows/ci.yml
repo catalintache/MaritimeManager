@@ -1,0 +1,30 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with: dotnet-version: '8.0.x'
+      - name: Build & Test
+        run: |
+          dotnet restore src/MyApp.sln
+          dotnet build src/MyApp.sln --no-restore --configuration Release
+          dotnet test src/MyApp.Tests --no-build --verbosity normal
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: build-backend
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with: node-version: '18'
+      - run: |
+          cd angular-client
+          npm ci
+          npm run build
