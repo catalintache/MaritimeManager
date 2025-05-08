@@ -18,11 +18,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Build all .NET projects (includes restore)
-        run: dotnet build src --configuration Release
-
-      - name: Run backend tests
-        run: dotnet test src/MyApp.Tests --configuration Release --no-build --verbosity normal
+      - name: Run backend tests (and build)
+        run: dotnet test src/MyApp.Tests/MyApp.Tests.csproj \
+               --configuration Release \
+               --verbosity normal
 
   build-frontend:
     needs: build-backend
