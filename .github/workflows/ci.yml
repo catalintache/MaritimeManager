@@ -1,30 +1,52 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
-        with: dotnet-version: '8.0.x'
-      - name: Build & Test
-        run: |
-          dotnet restore src/MyApp.sln
-          dotnet build src/MyApp.sln --no-restore --configuration Release
-          dotnet test src/MyApp.Tests --no-build --verbosity normal
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/MyApp.sln
+
+      - name: Build solution
+        run: dotnet build src/MyApp.sln --no-restore --configuration Release
+
+      - name: Run backend tests
+        run: dotnet test src/MyApp.Tests/MyApp.Tests.csproj --no-build --verbosity normal
 
   build-frontend:
-    runs-on: ubuntu-latest
     needs: build-backend
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
-        with: node-version: '18'
-      - run: |
+        with:
+          node-version: '18.x'
+
+      - name: Install frontend dependencies
+        run: |
           cd angular-client
           npm ci
+
+      - name: Build frontend
+        run: |
+          cd angular-client
           npm run build
